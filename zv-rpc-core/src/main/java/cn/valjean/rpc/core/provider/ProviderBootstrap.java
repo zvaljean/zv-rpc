@@ -32,10 +32,13 @@ public class ProviderBootstrap implements ApplicationContextAware {
 
     public RpcResponse<Object> invoke(RpcRequest request) {
         Object bean = skeleton.get(request.getService());
+        RpcResponse response = new RpcResponse();
         try {
             Method method = findMethod(bean.getClass(), request.getMethod());
             Object result = method.invoke(bean, request.getArgs());
-            return new RpcResponse<>(true, result);
+            response.setStatus(true);
+            response.setData(result);
+            return response;
         } catch (IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
             throw new RuntimeException(e);

@@ -21,6 +21,7 @@
         <module>zv-rpc-core</module>
         <module>zv-rpc-demo-api</module>
         <module>zv-rpc-demo-provider</module>
+        <module>zv-rpc-demo-consumer</module>
     </modules>
 
     <properties>
