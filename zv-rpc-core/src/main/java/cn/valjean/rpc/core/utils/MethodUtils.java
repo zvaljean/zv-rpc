@@ -46,4 +46,14 @@ public class MethodUtils {
     }
 
 
+    public static Method findMethod(Class<?> aclas, String methodName) {
+        for (Method method : aclas.getMethods()) {
+            if (method.getName().equals(methodName)) {
+                return method;
+            }
+        }
+        return null;
+    }
+
+
 }
