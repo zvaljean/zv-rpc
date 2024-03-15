@@ -31,7 +31,7 @@ public class ZVInvocationHandler implements InvocationHandler {
 
         RpcRequest rpcRequest = new RpcRequest();
         rpcRequest.setService(service.getCanonicalName());
-        rpcRequest.setMethod(method.getName());
+        rpcRequest.setMethodSign(method.getName());
         rpcRequest.setArgs(args);
 
         RpcResponse rpcResponse = post(rpcRequest);
