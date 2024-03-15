@@ -1,4 +1,4 @@
-package cn.valjean.rpc.demo.provider;
+package cn.valjean.rpc.demo.provider.impl;
 
 import cn.valjean.rpc.core.annotation.ZVProvider;
 import cn.valjean.rpc.demo.api.Order;

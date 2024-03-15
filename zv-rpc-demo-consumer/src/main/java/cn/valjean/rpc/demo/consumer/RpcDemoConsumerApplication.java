@@ -11,6 +11,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 
 @SpringBootApplication
+/**
+ * issue
+ * 通过import加载初始化的各种配置，
+ * 完成consumer的准备工作
+ */
 @Import({ConsumerConfig.class})
 public class RpcDemoConsumerApplication {
     public static void main(String[] args) {
