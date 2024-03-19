@@ -1,5 +1,7 @@
 package cn.valjean.rpc.core.consumer;
 
+import cn.valjean.rpc.core.api.LoadBalancer;
+import cn.valjean.rpc.core.api.Router;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
@@ -23,7 +25,16 @@ public class ConsumerConfig {
             consumerBootstrap.start();
             System.out.println("consumerBootstrap = started ############ ");
         };
+    }
 
+    @Bean
+    public Router router() {
+        return Router.Default;
+    }
+
+    @Bean
+    public LoadBalancer loadBalancer() {
+        return LoadBalancer.DefaultLoadBalancer;
     }
 
 }

@@ -1,9 +1,15 @@
 package cn.valjean.rpc.core.consumer;
 
 import cn.valjean.rpc.core.annotation.ZVConsumer;
+import cn.valjean.rpc.core.api.LoadBalancer;
+import cn.valjean.rpc.core.api.Router;
+import cn.valjean.rpc.core.api.RpcContext;
 import lombok.Data;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.EnvironmentAware;
+import org.springframework.core.env.Environment;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Proxy;
@@ -13,13 +19,31 @@ import java.util.List;
 import java.util.Map;
 
 @Data
-public class ConsumerBootstrap implements ApplicationContextAware {
+public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAware {
 
     ApplicationContext applicationContext;
+
+    Environment environment;
 
     private Map<String, Object> stub = new HashMap<>();
 
     public void start() {
+
+        Router router = applicationContext.getBean(Router.class);
+        LoadBalancer loadBalancer = applicationContext.getBean(LoadBalancer.class);
+
+        RpcContext rpcContext = new RpcContext();
+        rpcContext.setLoadBalancer(loadBalancer);
+        rpcContext.setRouter(router);
+
+
+        String providers = environment.getProperty("zvrpc.providers", "");
+        if (Strings.isEmpty(providers)) {
+            System.out.println("providers is empty");
+        }
+
+        String[] array = providers.split(",");
+
         String[] names = applicationContext.getBeanDefinitionNames();
         long begin = System.currentTimeMillis();
         System.out.println("begin => " + begin);
@@ -28,6 +52,9 @@ public class ConsumerBootstrap implements ApplicationContextAware {
         for (String name : names) {
             Object bean = applicationContext.getBean(name);
             String packageName = bean.getClass().getPackageName();
+            if (bean.getClass().getName().contains("DemoConsumerApplicationTest")) {
+                System.out.println("packageName = " + packageName);
+            }
             if (packageName.startsWith("org.springframework") ||
                     packageName.startsWith("java.") ||
                     packageName.startsWith("javax.") ||
@@ -51,7 +78,8 @@ public class ConsumerBootstrap implements ApplicationContextAware {
                     Object consumer = stub.get(canonicalName);
                     if (consumer == null) {
                         // 没有才创建
-                        consumer = createConsumer(service);
+                        // fixme: consumer --> null
+                        consumer = createConsumer(service, rpcContext, List.of(array));
                         //将创建好的bean放入其中
                         stub.put(canonicalName, consumer);
                     }
@@ -73,10 +101,10 @@ public class ConsumerBootstrap implements ApplicationContextAware {
      * @param service
      * @return
      */
-    private Object createConsumer(Class<?> service) {
+    private Object createConsumer(Class<?> service, RpcContext context, List<String> providers) {
         return Proxy.newProxyInstance(service.getClassLoader(),
                 // 使用代理来创建consumer，并增强其内容
-                new Class[]{service}, new ZVInvocationHandler(service));
+                new Class[]{service}, new ZVInvocationHandler(service, context, providers));
     }
 
     /**

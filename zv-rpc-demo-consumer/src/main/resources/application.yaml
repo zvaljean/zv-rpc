@@ -1,2 +1,5 @@
 server:
-  port: 8089
+  port: 8080
+
+zvrpc:
+  providers: http://localhost:8070,http://localhost:8071

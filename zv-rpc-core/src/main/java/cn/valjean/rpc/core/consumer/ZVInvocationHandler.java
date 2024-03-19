@@ -1,5 +1,6 @@
 package cn.valjean.rpc.core.consumer;
 
+import cn.valjean.rpc.core.api.RpcContext;
 import cn.valjean.rpc.core.api.RpcRequest;
 import cn.valjean.rpc.core.api.RpcResponse;
 import cn.valjean.rpc.core.utils.MethodUtils;
@@ -19,9 +20,13 @@ public class ZVInvocationHandler implements InvocationHandler {
     final static MediaType JSONTYPE = MediaType.get("application/json; charset=utf-8");
 
     Class<?> service;
+    RpcContext context;
+    List<String> provides;
 
-    public ZVInvocationHandler(Class<?> service) {
+    public ZVInvocationHandler(Class<?> service, RpcContext context, List<String> providers) {
         this.service = service;
+        this.context = context;
+        this.provides = providers;
     }
 
     @Override
@@ -33,10 +38,13 @@ public class ZVInvocationHandler implements InvocationHandler {
 
         RpcRequest rpcRequest = new RpcRequest();
         rpcRequest.setService(service.getCanonicalName());
-        rpcRequest.setMethodSign(method.getName());
+        rpcRequest.setMethodSign(MethodUtils.methodSign(method));
         rpcRequest.setArgs(args);
 
-        RpcResponse rpcResponse = post(rpcRequest);
+        List route = context.getRouter().route(provides);
+        String url = (String) context.getLoadBalancer().choose(route);
+
+        RpcResponse rpcResponse = post(rpcRequest, url);
         // success
         if (rpcResponse.isStatus()) {
             Object data = rpcResponse.getData();
@@ -114,12 +122,12 @@ public class ZVInvocationHandler implements InvocationHandler {
             .build();
 
 
-    private RpcResponse post(RpcRequest rpcRequest) {
+    private RpcResponse post(RpcRequest rpcRequest, String url) {
         String reqJson = JSON.toJSONString(rpcRequest);
         System.out.println(" reqJson data" + reqJson);
         // provider api
         Request request = new Request.Builder()
-                .url("http://localhost:8080/")
+                .url(url)
                 .post(RequestBody.create(reqJson, JSONTYPE))
                 .build();
         try {

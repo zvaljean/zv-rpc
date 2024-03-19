@@ -1,13 +1,8 @@
 package cn.valjean.rpc.demo.consumer;
 
-import cn.valjean.rpc.core.annotation.ZVConsumer;
 import cn.valjean.rpc.core.consumer.ConsumerConfig;
-import cn.valjean.rpc.demo.api.User;
-import cn.valjean.rpc.demo.api.UserService;
-import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 
 @SpringBootApplication
@@ -27,8 +22,8 @@ public class RpcDemoConsumerApplication {
      * 注解的使用方式
      * 这个 UserService, 被使用代理类来增强功能
      */
-    @ZVConsumer
-    UserService userService;
+//    @ZVConsumer
+//    UserService userService;
 
     /**
      * issue
@@ -38,11 +33,11 @@ public class RpcDemoConsumerApplication {
      *
      * @return
      */
-    @Bean
-    public ApplicationRunner consumer_runner() {
-        return x -> {
-            User byId = userService.findById(1);
-            System.out.println("byId = " + byId);
-        };
-    }
+//    @Bean
+//    public ApplicationRunner consumer_runner() {
+//        return x -> {
+//            User byId = userService.findById(1);
+//            System.out.println("byId = " + byId);
+//        };
+//    }
 }
