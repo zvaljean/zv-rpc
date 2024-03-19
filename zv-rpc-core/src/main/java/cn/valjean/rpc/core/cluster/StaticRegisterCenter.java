@@ -1,9 +1,12 @@
 package cn.valjean.rpc.core.cluster;
 
 import cn.valjean.rpc.core.api.RegistryCenter;
+import lombok.Data;
 
 import java.util.List;
 
+
+@Data
 public class StaticRegisterCenter implements RegistryCenter {
     List<String> providers;
 

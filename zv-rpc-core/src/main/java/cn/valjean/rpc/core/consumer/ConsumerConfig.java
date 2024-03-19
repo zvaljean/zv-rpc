@@ -1,12 +1,17 @@
 package cn.valjean.rpc.core.consumer;
 
 import cn.valjean.rpc.core.api.LoadBalancer;
+import cn.valjean.rpc.core.api.RegistryCenter;
 import cn.valjean.rpc.core.api.Router;
+import cn.valjean.rpc.core.cluster.StaticRegisterCenter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+
+import java.util.List;
 
 @Configuration
 public class ConsumerConfig {
@@ -15,6 +20,9 @@ public class ConsumerConfig {
     ConsumerBootstrap createConsumerBootstrap() {
         return new ConsumerBootstrap();
     }
+
+    @Value("${zvrpc.providers}")
+    String services;
 
     @Bean
     @Order(Integer.MIN_VALUE)
@@ -35,6 +43,11 @@ public class ConsumerConfig {
     @Bean
     public LoadBalancer loadBalancer() {
         return LoadBalancer.DefaultLoadBalancer;
+    }
+
+    @Bean
+    public RegistryCenter registryCenter() {
+        return new StaticRegisterCenter(List.of(services.split(",")));
     }
 
 }

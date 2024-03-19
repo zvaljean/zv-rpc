@@ -2,6 +2,7 @@ package cn.valjean.rpc.core.consumer;
 
 import cn.valjean.rpc.core.annotation.ZVConsumer;
 import cn.valjean.rpc.core.api.LoadBalancer;
+import cn.valjean.rpc.core.api.RegistryCenter;
 import cn.valjean.rpc.core.api.Router;
 import cn.valjean.rpc.core.api.RpcContext;
 import lombok.Data;
@@ -48,6 +49,8 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
         long begin = System.currentTimeMillis();
         System.out.println("begin => " + begin);
 
+        RegistryCenter rc = applicationContext.getBean(RegistryCenter.class);
+
         // 优化点1：过滤去掉spring/jdk/其他框架本身的bean的反射扫描 TODO 1
         for (String name : names) {
             Object bean = applicationContext.getBean(name);
@@ -79,7 +82,7 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
                     if (consumer == null) {
                         // 没有才创建
                         // fixme: consumer --> null
-                        consumer = createConsumer(service, rpcContext, List.of(array));
+                        consumer = createConsumer(service, rpcContext, rc);
                         //将创建好的bean放入其中
                         stub.put(canonicalName, consumer);
                     }
@@ -101,7 +104,9 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
      * @param service
      * @return
      */
-    private Object createConsumer(Class<?> service, RpcContext context, List<String> providers) {
+    private Object createConsumer(Class<?> service, RpcContext context, RegistryCenter registryCenter) {
+        List<String> providers = registryCenter.fetchAll(service.getCanonicalName());
+
         return Proxy.newProxyInstance(service.getClassLoader(),
                 // 使用代理来创建consumer，并增强其内容
                 new Class[]{service}, new ZVInvocationHandler(service, context, providers));
