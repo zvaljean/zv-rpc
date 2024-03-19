@@ -3,13 +3,15 @@ package cn.valjean.rpc.core.consumer;
 import cn.valjean.rpc.core.api.RpcRequest;
 import cn.valjean.rpc.core.api.RpcResponse;
 import cn.valjean.rpc.core.utils.MethodUtils;
+import cn.valjean.rpc.core.utils.TypeUtils;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import okhttp3.*;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
+import java.lang.reflect.*;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class ZVInvocationHandler implements InvocationHandler {
@@ -38,12 +40,66 @@ public class ZVInvocationHandler implements InvocationHandler {
         // success
         if (rpcResponse.isStatus()) {
             Object data = rpcResponse.getData();
-            // issue instanceof new fearther
+            Class<?> returnType = method.getReturnType();
+            // issue instanceof new feather
             if (data instanceof JSONObject jsonResult) {
-                return jsonResult.toJavaObject(method.getReturnType());
+                // return map
+                if (Map.class.isAssignableFrom(returnType)) {
+                    Map map = new HashMap();
+                    // issue: getGenericReturnType
+                    Type genericReturnType = method.getGenericReturnType();
+                    // in and out , both is map ?
+                    // what's the nature of jsonObject?
+                    if (genericReturnType instanceof ParameterizedType parameterizedType) {
+                        Class<?> keyType = (Class<?>) parameterizedType.getActualTypeArguments()[0];
+                        Class<?> valueType = (Class<?>) parameterizedType.getActualTypeArguments()[1];
+                        jsonResult.entrySet().stream().forEach(
+                                e -> {
+                                    Object key = TypeUtils.cast(e.getKey(), keyType);
+                                    Object value = TypeUtils.cast(e.getValue(), valueType);
+                                    map.put(key, value);
+                                });
+                    }
+                    return map;
+                }
+                return jsonResult.toJavaObject(returnType);
+            } else if (data instanceof JSONArray jsonArray) {
+                Object[] array = jsonArray.stream().toArray();
+                if (returnType.isArray()) {
+                    // issue: getComponentType
+                    Class<?> componentType = returnType.getComponentType();
+                    Object resultArray = Array.newInstance(componentType, array.length);
+                    for (int i = 0; i < array.length; i++) {
+                        // issue
+                        if (componentType.isPrimitive() || componentType.getPackageName().startsWith("java")) {
+                            Array.set(resultArray, i, array[i]);
+                        } else {
+                            Object castObject = TypeUtils.cast(array[i], componentType);
+                            Array.set(resultArray, i, castObject);
+                        }
+                    }
+                    return resultArray;
+                } else if (List.class.isAssignableFrom(returnType)) {
+                    List<Object> resultList = new ArrayList<>(array.length);
+                    Type genericReturnType = method.getGenericReturnType();
+                    System.out.println(genericReturnType);
+                    if (genericReturnType instanceof ParameterizedType parameterizedType) {
+                        Type actualType = parameterizedType.getActualTypeArguments()[0];
+                        System.out.println(actualType);
+                        for (Object o : array) {
+                            resultList.add(TypeUtils.cast(o, (Class<?>) actualType));
+                        }
+                    } else {
+                        resultList.addAll(Arrays.asList(array));
+                    }
+                    return resultList;
+                } else {
+                    return null;
+                }
             } else {
-                return data;
+                return TypeUtils.cast(data, returnType);
             }
+
         } else {
             Exception ex = rpcResponse.getEx();
             throw new RuntimeException(ex);
