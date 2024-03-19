@@ -1,4 +1,4 @@
-package cn.valjean.rpc.core.cluster;
+package cn.valjean.rpc.core.registry;
 
 import cn.valjean.rpc.core.api.RegistryCenter;
 import lombok.Data;
@@ -37,5 +37,10 @@ public class StaticRegisterCenter implements RegistryCenter {
     @Override
     public List<String> fetchAll(String service) {
         return providers;
+    }
+
+    @Override
+    public void subscribe(String service, ChangedListener instance) {
+
     }
 }

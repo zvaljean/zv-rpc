@@ -1,6 +1,8 @@
 package cn.valjean.rpc.core.api;
 
 
+import cn.valjean.rpc.core.registry.ChangedListener;
+
 import java.util.List;
 
 public interface RegistryCenter {
@@ -27,6 +29,6 @@ public interface RegistryCenter {
 
     List<String> fetchAll(String service);
 
-//    void subscribe(String service, ChangedListener instance);
+    void subscribe(String service, ChangedListener instance);
 
 }

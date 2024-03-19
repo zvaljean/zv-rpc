@@ -6,7 +6,6 @@ import cn.valjean.rpc.core.api.RegistryCenter;
 import cn.valjean.rpc.core.api.Router;
 import cn.valjean.rpc.core.api.RpcContext;
 import lombok.Data;
-import org.apache.logging.log4j.util.Strings;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.EnvironmentAware;
@@ -18,6 +17,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Data
 public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAware {
@@ -38,12 +38,12 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
         rpcContext.setRouter(router);
 
 
-        String providers = environment.getProperty("zvrpc.providers", "");
-        if (Strings.isEmpty(providers)) {
-            System.out.println("providers is empty");
-        }
+//        String providers = environment.getProperty("zvrpc.providers", "");
+//        if (Strings.isEmpty(providers)) {
+//            System.out.println("providers is empty");
+//        }
 
-        String[] array = providers.split(",");
+//        String[] array = providers.split(",");
 
         String[] names = applicationContext.getBeanDefinitionNames();
         long begin = System.currentTimeMillis();
@@ -82,7 +82,8 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
                     if (consumer == null) {
                         // 没有才创建
                         // fixme: consumer --> null
-                        consumer = createConsumer(service, rpcContext, rc);
+//                        consumer = createConsumer(service, rpcContext, rc);
+                        consumer = createFromRegister(service, rpcContext, rc);
                         //将创建好的bean放入其中
                         stub.put(canonicalName, consumer);
                     }
@@ -97,6 +98,25 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
         }
     }
 
+    private Object createFromRegister(Class<?> service, RpcContext rpcContext, RegistryCenter rc) {
+        String server = service.getCanonicalName();
+        List<String> nodes = mapUrl(rc.fetchAll(server));
+        nodes.forEach(x -> System.out.println("providers --->>> " + x));
+
+        rc.subscribe(server, event -> {
+            nodes.clear();
+            nodes.addAll(mapUrl(event.getData()));
+        });
+
+
+        return createConsumer(service, rpcContext, nodes);
+    }
+
+    private List<String> mapUrl(List<String> nodes) {
+        return nodes.stream().map(x -> "http://" + x.replace('_', ':'))
+                .collect(Collectors.toList());
+    }
+
     /**
      * 创建相关消费者
      * issue 反射相关内容
@@ -104,8 +124,8 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
      * @param service
      * @return
      */
-    private Object createConsumer(Class<?> service, RpcContext context, RegistryCenter registryCenter) {
-        List<String> providers = registryCenter.fetchAll(service.getCanonicalName());
+    private Object createConsumer(Class<?> service, RpcContext context, List<String> providers) {
+//        List<String> providers = registryCenter.fetchAll(service.getCanonicalName());
 
         return Proxy.newProxyInstance(service.getClassLoader(),
                 // 使用代理来创建consumer，并增强其内容

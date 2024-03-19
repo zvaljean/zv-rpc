@@ -1,13 +1,17 @@
 package cn.valjean.rpc.core.provider;
 
 import cn.valjean.rpc.core.annotation.ZVProvider;
+import cn.valjean.rpc.core.api.RegistryCenter;
 import cn.valjean.rpc.core.api.RpcRequest;
 import cn.valjean.rpc.core.api.RpcResponse;
 import cn.valjean.rpc.core.meta.ProviderMeta;
 import cn.valjean.rpc.core.utils.MethodUtils;
 import cn.valjean.rpc.core.utils.TypeUtils;
 import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import lombok.Data;
+import lombok.SneakyThrows;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.LinkedMultiValueMap;
@@ -15,6 +19,8 @@ import org.springframework.util.MultiValueMap;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.InetAddress;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -24,14 +30,18 @@ public class ProviderBootstrap implements ApplicationContextAware {
 
     ApplicationContext applicationContext;
 
-    //    private Map<String, Object> skeleton = new HashMap<>();
     private MultiValueMap<String, ProviderMeta> skeleton = new LinkedMultiValueMap<>();
+
+    private String instance;
+
+    @Value("${server.port}")
+    private String port;
+
 
     /**
      * 构建服务提供者
      */
-    @PostConstruct
-    public void buildProviders() {
+    public void init01() {
         // ZVProvider 注解是标注在实现类上的
         Map<String, Object> provides = applicationContext.getBeansWithAnnotation(ZVProvider.class);
         provides.forEach((x, y) -> System.out.println(x));
@@ -47,6 +57,50 @@ public class ProviderBootstrap implements ApplicationContextAware {
             }
         }
     }
+
+    @PostConstruct
+    public void init() {
+        // ZVProvider 注解是标注在实现类上的
+        Map<String, Object> provides = applicationContext.getBeansWithAnnotation(ZVProvider.class);
+        provides.forEach((x, y) -> System.out.println(x));
+        provides.values().forEach(this::getInterfaces);
+    }
+
+    private void getInterfaces(Object value) {
+        Arrays.stream(value.getClass().getInterfaces())
+                .forEach(iter -> {
+                    for (Method method : iter.getMethods()) {
+                        String s = MethodUtils.methodSign(method);
+                        if (s.length() == 0) {
+                            continue;
+                        }
+                        createProvider(iter, value, method, s);
+                    }
+                });
+    }
+
+    @SneakyThrows
+    public void start() {
+        String ip = InetAddress.getLocalHost().getHostAddress();
+        instance = ip + "_" + port;
+        skeleton.keySet().forEach(this::registerService);
+    }
+
+    @PreDestroy
+    public void stop() {
+        skeleton.keySet().forEach(this::unregisterService);
+    }
+
+    private void unregisterService(String service) {
+        RegistryCenter rc = applicationContext.getBean(RegistryCenter.class);
+        rc.unregister(service, instance);
+    }
+
+    private void registerService(String service) {
+        RegistryCenter rc = applicationContext.getBean(RegistryCenter.class);
+        rc.register(service, instance);
+    }
+
 
     /**
      * 根据提供的元数据创建服务提供者
