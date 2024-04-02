@@ -2,6 +2,7 @@ package cn.valjean.rpc.core.registry;
 
 import cn.valjean.rpc.core.api.RegistryCenter;
 import cn.valjean.rpc.core.meta.InstanceMeta;
+import cn.valjean.rpc.core.meta.ServiceMeta;
 import lombok.Data;
 
 import java.util.List;
@@ -26,22 +27,22 @@ public class StaticRegisterCenter implements RegistryCenter {
     }
 
     @Override
-    public void register(String service, InstanceMeta instance) {
+    public void register(ServiceMeta service, InstanceMeta instance) {
 
     }
 
     @Override
-    public void unregister(String service, InstanceMeta instance) {
+    public void unregister(ServiceMeta service, InstanceMeta instance) {
 
     }
 
     @Override
-    public List<InstanceMeta> fetchAll(String service) {
+    public List<InstanceMeta> fetchAll(ServiceMeta service) {
         return providers;
     }
 
     @Override
-    public void subscribe(String service, ChangedListener instance) {
+    public void subscribe(ServiceMeta service, ChangedListener instance) {
 
     }
 }

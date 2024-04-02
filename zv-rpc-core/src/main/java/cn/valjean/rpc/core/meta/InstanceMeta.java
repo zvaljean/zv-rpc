@@ -34,14 +34,6 @@ public class InstanceMeta {
         this.context = context;
     }
 
-    public static List<InstanceMeta> convertInstance(List<String> data) {
-        List<InstanceMeta> list = new ArrayList<>();
-        data.stream().forEach(item -> {
-            String[] detail = item.split("_");
-            list.add(http(detail[0], Integer.valueOf(detail[1])));
-        });
-        return list;
-    }
 
     public String toUrl() {
         return String.format("%s://%s:%d/%s", scheme, host, port, context);
@@ -53,5 +45,14 @@ public class InstanceMeta {
 
     public static InstanceMeta http(String host, Integer port) {
         return new InstanceMeta("http", host, port, "");
+    }
+
+    public static List<InstanceMeta> convertInstance(List<String> data) {
+        List<InstanceMeta> list = new ArrayList<>();
+        data.stream().forEach(item -> {
+            String[] detail = item.split("_");
+            list.add(http(detail[0], Integer.valueOf(detail[1])));
+        });
+        return list;
     }
 }

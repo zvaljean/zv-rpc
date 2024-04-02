@@ -4,6 +4,7 @@ import cn.valjean.rpc.core.annotation.ZVProvider;
 import cn.valjean.rpc.core.api.RegistryCenter;
 import cn.valjean.rpc.core.meta.InstanceMeta;
 import cn.valjean.rpc.core.meta.ProviderMeta;
+import cn.valjean.rpc.core.meta.ServiceMeta;
 import cn.valjean.rpc.core.utils.MethodUtils;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -33,6 +34,16 @@ public class ProviderBootstrap implements ApplicationContextAware {
 
     @Value("${server.port}")
     private String port;
+
+    @Value("${app.id}")
+    private String app;
+
+    @Value("${app.namespace}")
+    private String namespace;
+
+    @Value("${app.env}")
+    private String env;
+
 
     /**
      * 构建服务提供者
@@ -100,32 +111,43 @@ public class ProviderBootstrap implements ApplicationContextAware {
 
     private void unregisterService(String service) {
         //        RegistryCenter rc = applicationContext.getBean(RegistryCenter.class);
-        rc.unregister(service, instance);
+        ServiceMeta serviceMeta = ServiceMeta.builder()
+                .app(app)
+                .namespace(namespace)
+                .env(env)
+                .name(service).build();
+
+
+        rc.unregister(serviceMeta, instance);
     }
 
     private void registerService(String service) {
         //        RegistryCenter rc = applicationContext.getBean(RegistryCenter.class);
-        rc.register(service, instance);
+        ServiceMeta serviceMeta = ServiceMeta.builder()
+                .app(app)
+                .namespace(namespace)
+                .env(env)
+                .name(service).build();
+        rc.register(serviceMeta, instance);
     }
 
 
     /**
      * 根据提供的元数据创建服务提供者
      *
-     * @param inter
+     * @param service
      * @param obj
      * @param method
      * @param sign
      */
-    private void createProvider(Class<?> inter, Object obj, Method method, String sign) {
+    private void createProvider(Class<?> service, Object obj, Method method, String sign) {
         ProviderMeta meta = new ProviderMeta();
         meta.setMethod(method);
         meta.setServiceImpl(obj);
         meta.setMethodSign(sign);
         //issue : 这块的obj，是对应的实现类?
-        skeleton.add(inter.getCanonicalName(), meta);
+        skeleton.add(service.getCanonicalName(), meta);
     }
-
 
 
 }

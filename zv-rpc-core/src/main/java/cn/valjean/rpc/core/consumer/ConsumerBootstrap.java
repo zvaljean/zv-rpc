@@ -5,8 +5,10 @@ import cn.valjean.rpc.core.api.RegistryCenter;
 import cn.valjean.rpc.core.api.Router;
 import cn.valjean.rpc.core.api.RpcContext;
 import cn.valjean.rpc.core.meta.InstanceMeta;
+import cn.valjean.rpc.core.meta.ServiceMeta;
 import cn.valjean.rpc.core.utils.MethodUtils;
 import lombok.Data;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.EnvironmentAware;
@@ -26,6 +28,17 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
     Environment environment;
 
     private Map<String, Object> stub = new HashMap<>();
+
+
+    @Value("${app.id}")
+    private String app;
+
+    @Value("${app.namespace}")
+    private String namespace;
+
+    @Value("${app.env}")
+    private String env;
+
 
     public void start() {
 
@@ -91,10 +104,18 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
 
     private Object createFromRegister(Class<?> service, RpcContext rpcContext, RegistryCenter rc) {
         String server = service.getCanonicalName();
-        List<InstanceMeta> nodes = rc.fetchAll(server);
+
+        ServiceMeta serviceMeta = ServiceMeta.builder()
+                .app(app)
+                .namespace(namespace)
+                .env(env)
+                .name(server).build();
+
+        List<InstanceMeta> nodes = rc.fetchAll(serviceMeta);
+
         nodes.forEach(x -> System.out.println("providers --->>> " + x));
 
-        rc.subscribe(server, event -> {
+        rc.subscribe(serviceMeta, event -> {
             nodes.clear();
             nodes.addAll(event.getData());
         });

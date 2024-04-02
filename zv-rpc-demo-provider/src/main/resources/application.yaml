@@ -3,3 +3,8 @@ server:
 zk:
   url: 10.0.0.241:2181
   namespace: valjean
+
+app:
+  id: app1
+  env: dev
+  namespace: public

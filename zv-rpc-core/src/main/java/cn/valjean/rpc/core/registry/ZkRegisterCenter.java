@@ -2,6 +2,7 @@ package cn.valjean.rpc.core.registry;
 
 import cn.valjean.rpc.core.api.RegistryCenter;
 import cn.valjean.rpc.core.meta.InstanceMeta;
+import cn.valjean.rpc.core.meta.ServiceMeta;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -44,8 +45,8 @@ public class ZkRegisterCenter implements RegistryCenter {
     }
 
     @Override
-    public void register(String service, InstanceMeta instance) {
-        String servicePath = "/" + service;
+    public void register(ServiceMeta service, InstanceMeta instance) {
+        String servicePath = "/" + service.toPath();
         try {
             // 创建服务的持久化节点
             if (client.checkExists().forPath(servicePath) == null) {
@@ -61,9 +62,9 @@ public class ZkRegisterCenter implements RegistryCenter {
     }
 
     @Override
-    public void unregister(String service, InstanceMeta instance) {
+    public void unregister(ServiceMeta service, InstanceMeta instance) {
 
-        String servicePath = "/" + service;
+        String servicePath = "/" + service.toPath();
         System.out.println("servicePath = " + servicePath);
         System.out.println("instance = " + instance.toUrl());
         try {
@@ -73,7 +74,7 @@ public class ZkRegisterCenter implements RegistryCenter {
             }
             // 删除实例节点,
             // 如果有子节点也删除
-            client.delete().deletingChildrenIfNeeded().forPath(servicePath);
+            client.delete().quietly().deletingChildrenIfNeeded().forPath(servicePath);
             //            client.delete().forPath(servicePath);
             System.out.println("zk--------> unregister");
         } catch (Exception ex) {
@@ -83,8 +84,8 @@ public class ZkRegisterCenter implements RegistryCenter {
     }
 
     @Override
-    public List<InstanceMeta> fetchAll(String service) {
-        String servicePath = "/" + service;
+    public List<InstanceMeta> fetchAll(ServiceMeta service) {
+        String servicePath = "/" + service.toPath();
         try {
             //            List<InstanceMeta> nodes =
             List<String> data = client.getChildren().forPath(servicePath);
@@ -96,7 +97,7 @@ public class ZkRegisterCenter implements RegistryCenter {
     }
 
     @Override
-    public void subscribe(String service, ChangedListener instance) {
+    public void subscribe(ServiceMeta service, ChangedListener instance) {
 
     }
 }

@@ -2,6 +2,7 @@ package cn.valjean.rpc.core.api;
 
 
 import cn.valjean.rpc.core.meta.InstanceMeta;
+import cn.valjean.rpc.core.meta.ServiceMeta;
 import cn.valjean.rpc.core.registry.ChangedListener;
 
 import java.util.List;
@@ -24,12 +25,12 @@ public interface RegistryCenter {
      * @param service
      * @param instance
      */
-    void register(String service, InstanceMeta instance);
+    void register(ServiceMeta service, InstanceMeta instance);
 
-    void unregister(String service, InstanceMeta instance);
+    void unregister(ServiceMeta service, InstanceMeta instance);
 
-    List<InstanceMeta> fetchAll(String service);
+    List<InstanceMeta> fetchAll(ServiceMeta service);
 
-    void subscribe(String service, ChangedListener instance);
+    void subscribe(ServiceMeta service, ChangedListener instance);
 
 }
