@@ -60,15 +60,19 @@ public class ZkRegisterCenter implements RegistryCenter {
     public void unregister(String service, String instance) {
 
         String servicePath = "/" + service;
+        System.out.println("servicePath = " + servicePath);
+        System.out.println("instance = " + instance);
         try {
             // 判断服务是否存在
             if (client.checkExists().forPath(servicePath) == null) {
                 return;
             }
             // 删除实例节点
-            client.delete().quietly().forPath(instance);
+            client.delete().quietly().forPath(servicePath);
+            //            client.delete().forPath(servicePath);
             System.out.println("zk--------> unregister");
         } catch (Exception ex) {
+            ex.printStackTrace();
             throw new RuntimeException(ex);
         }
     }

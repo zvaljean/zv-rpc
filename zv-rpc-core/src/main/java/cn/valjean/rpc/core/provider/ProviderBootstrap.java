@@ -99,6 +99,7 @@ public class ProviderBootstrap implements ApplicationContextAware {
 
     @PreDestroy
     public void stop() {
+        System.out.println("PreDestroy-------------------->");
         skeleton.keySet().forEach(this::unregisterService);
         rc.stop();
     }
