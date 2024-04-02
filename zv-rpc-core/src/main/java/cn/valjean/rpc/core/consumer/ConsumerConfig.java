@@ -3,6 +3,7 @@ package cn.valjean.rpc.core.consumer;
 import cn.valjean.rpc.core.api.LoadBalancer;
 import cn.valjean.rpc.core.api.RegistryCenter;
 import cn.valjean.rpc.core.api.Router;
+import cn.valjean.rpc.core.meta.InstanceMeta;
 import cn.valjean.rpc.core.registry.ZkRegisterCenter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,12 +35,12 @@ public class ConsumerConfig {
     }
 
     @Bean
-    public Router router() {
+    public Router<InstanceMeta> router() {
         return Router.Default;
     }
 
     @Bean
-    public LoadBalancer loadBalancer() {
+    public LoadBalancer<InstanceMeta> loadBalancer() {
         return LoadBalancer.DefaultLoadBalancer;
     }
 

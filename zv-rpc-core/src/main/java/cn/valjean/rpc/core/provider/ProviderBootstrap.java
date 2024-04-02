@@ -55,11 +55,11 @@ public class ProviderBootstrap implements ApplicationContextAware {
         for (Object value : provides.values()) {
             for (Class<?> inter : value.getClass().getInterfaces()) {
                 for (Method method : inter.getMethods()) {
-                    String s = MethodUtils.methodSign(method);
-                    if (s.length() == 0) {
+                    String sign = MethodUtils.methodSign(method);
+                    if (sign.length() == 0) {
                         continue;
                     }
-                    createProvider(inter, value, method, s);
+                    createProvider(inter, value, method, sign);
                 }
             }
         }
@@ -81,17 +81,16 @@ public class ProviderBootstrap implements ApplicationContextAware {
         provides.values().forEach(this::getInterfaces);
     }
 
-    private void getInterfaces(Object value) {
-        Arrays.stream(value.getClass().getInterfaces())
-                .forEach(service -> {
-                    for (Method method : service.getMethods()) {
-                        String s = MethodUtils.methodSign(method);
-                        if (s.length() == 0) {
-                            continue;
-                        }
-                        createProvider(service, value, method, s);
-                    }
-                });
+    private void getInterfaces(Object impl) {
+        Arrays.stream(impl.getClass().getInterfaces()).forEach(service -> {
+            for (Method method : service.getMethods()) {
+                String sign = MethodUtils.methodSign(method);
+                if (sign.length() == 0) {
+                    continue;
+                }
+                createProvider(service, impl, method, sign);
+            }
+        });
     }
 
     @SneakyThrows
@@ -136,15 +135,15 @@ public class ProviderBootstrap implements ApplicationContextAware {
      * 根据提供的元数据创建服务提供者
      *
      * @param service
-     * @param obj
+     * @param impl
      * @param method
      * @param sign
      */
-    private void createProvider(Class<?> service, Object obj, Method method, String sign) {
-        ProviderMeta meta = new ProviderMeta();
-        meta.setMethod(method);
-        meta.setServiceImpl(obj);
-        meta.setMethodSign(sign);
+    private void createProvider(Class<?> service, Object impl, Method method, String sign) {
+        ProviderMeta meta = ProviderMeta.builder()
+                .method(method)
+                .serviceImpl(impl)
+                .serviceImpl(sign).build();
         //issue : 这块的obj，是对应的实现类?
         skeleton.add(service.getCanonicalName(), meta);
     }
