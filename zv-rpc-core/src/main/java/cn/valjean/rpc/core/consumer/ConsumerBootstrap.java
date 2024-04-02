@@ -1,10 +1,10 @@
 package cn.valjean.rpc.core.consumer;
 
-import cn.valjean.rpc.core.annotation.ZVConsumer;
 import cn.valjean.rpc.core.api.LoadBalancer;
 import cn.valjean.rpc.core.api.RegistryCenter;
 import cn.valjean.rpc.core.api.Router;
 import cn.valjean.rpc.core.api.RpcContext;
+import cn.valjean.rpc.core.utils.MethodUtils;
 import lombok.Data;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -13,7 +13,6 @@ import org.springframework.core.env.Environment;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Proxy;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,14 +35,6 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
         RpcContext rpcContext = new RpcContext();
         rpcContext.setLoadBalancer(loadBalancer);
         rpcContext.setRouter(router);
-
-
-//        String providers = environment.getProperty("zvrpc.providers", "");
-//        if (Strings.isEmpty(providers)) {
-//            System.out.println("providers is empty");
-//        }
-
-//        String[] array = providers.split(",");
 
         String[] names = applicationContext.getBeanDefinitionNames();
         long begin = System.currentTimeMillis();
@@ -70,7 +61,7 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
             }
             System.out.println(packageName + " package bean => " + name);
 
-            List<Field> fields = findAnnotatedField(bean.getClass());
+            List<Field> fields = MethodUtils.findAnnotatedField(bean.getClass());
             for (Field field : fields) {
                 System.out.println("field name = " + field.getName());
                 try {
@@ -132,26 +123,4 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
                 new Class[]{service}, new ZVInvocationHandler(service, context, providers));
     }
 
-    /**
-     * 在该类以及其父类里，找到标注有 ZVConsumer 的字段。
-     *
-     * @param aClass
-     * @return
-     */
-    private List<Field> findAnnotatedField(Class<?> aClass) {
-        List<Field> results = new ArrayList<>();
-        while (aClass != null) {
-            //issue 相关内容点补全
-            Field[] fields = aClass.getDeclaredFields();
-            for (Field field : fields) {
-                if (field.isAnnotationPresent(ZVConsumer.class)) {
-                    results.add(field);
-                }
-            }
-            //fixme 此处还获取父类相关的字段？
-            aClass = aClass.getSuperclass();
-        }
-
-        return results;
-    }
 }

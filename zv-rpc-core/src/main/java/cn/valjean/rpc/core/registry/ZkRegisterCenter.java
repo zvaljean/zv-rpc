@@ -68,7 +68,7 @@ public class ZkRegisterCenter implements RegistryCenter {
                 return;
             }
             // 删除实例节点,
-            //            如果有子节点也删除
+            // 如果有子节点也删除
             client.delete().deletingChildrenIfNeeded().forPath(servicePath);
             //            client.delete().forPath(servicePath);
             System.out.println("zk--------> unregister");
