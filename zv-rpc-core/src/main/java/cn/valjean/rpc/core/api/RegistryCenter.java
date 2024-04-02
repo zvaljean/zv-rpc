@@ -28,7 +28,7 @@ public interface RegistryCenter {
 
     void unregister(String service, InstanceMeta instance);
 
-    List<String> fetchAll(String service);
+    List<InstanceMeta> fetchAll(String service);
 
     void subscribe(String service, ChangedListener instance);
 

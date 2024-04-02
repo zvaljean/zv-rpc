@@ -4,6 +4,7 @@ import cn.valjean.rpc.core.api.RpcContext;
 import cn.valjean.rpc.core.api.RpcRequest;
 import cn.valjean.rpc.core.api.RpcResponse;
 import cn.valjean.rpc.core.consumer.http.OkHttpInvoker;
+import cn.valjean.rpc.core.meta.InstanceMeta;
 import cn.valjean.rpc.core.utils.MethodUtils;
 import cn.valjean.rpc.core.utils.TypeUtils;
 
@@ -16,11 +17,11 @@ public class ZVInvocationHandler implements InvocationHandler {
 
     Class<?> service;
     RpcContext context;
-    List<String> provides;
+    List<InstanceMeta> provides;
 
     HttpInvoker httpInvoker = new OkHttpInvoker();
 
-    public ZVInvocationHandler(Class<?> service, RpcContext context, List<String> providers) {
+    public ZVInvocationHandler(Class<?> service, RpcContext context, List<InstanceMeta> providers) {
         this.service = service;
         this.context = context;
         this.provides = providers;
@@ -38,10 +39,10 @@ public class ZVInvocationHandler implements InvocationHandler {
         rpcRequest.setMethodSign(MethodUtils.methodSign(method));
         rpcRequest.setArgs(args);
 
-        List route = context.getRouter().route(provides);
-        String url = (String) context.getLoadBalancer().choose(route);
+        List<InstanceMeta> instances = context.getRouter().route(provides);
+        InstanceMeta instance = (InstanceMeta) context.getLoadBalancer().choose(instances);
 
-        RpcResponse rpcResponse = httpInvoker.post(rpcRequest, url);
+        RpcResponse rpcResponse = httpInvoker.post(rpcRequest, instance.toUrl());
         // success
         if (rpcResponse.isStatus())
             return TypeUtils.caseMethodResult(method, rpcResponse.getData());

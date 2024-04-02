@@ -40,7 +40,7 @@ public class ZkRegisterCenter implements RegistryCenter {
     @Override
     public void stop() {
         client.close();
-        System.out.println("zk--------> close");
+        System.out.println("zk--------> stop");
     }
 
     @Override
@@ -83,12 +83,12 @@ public class ZkRegisterCenter implements RegistryCenter {
     }
 
     @Override
-    public List<String> fetchAll(String service) {
+    public List<InstanceMeta> fetchAll(String service) {
         String servicePath = "/" + service;
         try {
-            List<String> nodes = client.getChildren().forPath(servicePath);
-            nodes.forEach(System.out::println);
-            return nodes;
+            //            List<InstanceMeta> nodes =
+            List<String> data = client.getChildren().forPath(servicePath);
+            return InstanceMeta.convertInstance(data);
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e);

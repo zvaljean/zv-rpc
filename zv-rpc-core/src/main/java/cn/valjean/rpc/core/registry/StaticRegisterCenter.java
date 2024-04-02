@@ -9,9 +9,9 @@ import java.util.List;
 
 @Data
 public class StaticRegisterCenter implements RegistryCenter {
-    List<String> providers;
+    List<InstanceMeta> providers;
 
-    public StaticRegisterCenter(List<String> providers) {
+    public StaticRegisterCenter(List<InstanceMeta> providers) {
         this.providers = providers;
     }
 
@@ -36,7 +36,7 @@ public class StaticRegisterCenter implements RegistryCenter {
     }
 
     @Override
-    public List<String> fetchAll(String service) {
+    public List<InstanceMeta> fetchAll(String service) {
         return providers;
     }
 

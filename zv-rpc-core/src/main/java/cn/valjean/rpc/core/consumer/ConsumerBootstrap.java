@@ -4,6 +4,7 @@ import cn.valjean.rpc.core.api.LoadBalancer;
 import cn.valjean.rpc.core.api.RegistryCenter;
 import cn.valjean.rpc.core.api.Router;
 import cn.valjean.rpc.core.api.RpcContext;
+import cn.valjean.rpc.core.meta.InstanceMeta;
 import cn.valjean.rpc.core.utils.MethodUtils;
 import lombok.Data;
 import org.springframework.context.ApplicationContext;
@@ -16,7 +17,6 @@ import java.lang.reflect.Proxy;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Data
 public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAware {
@@ -91,22 +91,21 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
 
     private Object createFromRegister(Class<?> service, RpcContext rpcContext, RegistryCenter rc) {
         String server = service.getCanonicalName();
-        List<String> nodes = mapUrl(rc.fetchAll(server));
+        List<InstanceMeta> nodes = rc.fetchAll(server);
         nodes.forEach(x -> System.out.println("providers --->>> " + x));
 
         rc.subscribe(server, event -> {
             nodes.clear();
-            nodes.addAll(mapUrl(event.getData()));
+            nodes.addAll(event.getData());
         });
-
 
         return createConsumer(service, rpcContext, nodes);
     }
 
-    private List<String> mapUrl(List<String> nodes) {
-        return nodes.stream().map(x -> "http://" + x.replace('_', ':'))
-                .collect(Collectors.toList());
-    }
+    //    private List<String> mapUrl(List<String> nodes) {
+    //        return nodes.stream().map(x -> "http://" + x.replace('_', ':'))
+    //                .collect(Collectors.toList());
+    //    }
 
     /**
      * 创建相关消费者
@@ -115,8 +114,8 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
      * @param service
      * @return
      */
-    private Object createConsumer(Class<?> service, RpcContext context, List<String> providers) {
-//        List<String> providers = registryCenter.fetchAll(service.getCanonicalName());
+    private Object createConsumer(Class<?> service, RpcContext context, List<InstanceMeta> providers) {
+        //        List<String> providers = registryCenter.fetchAll(service.getCanonicalName());
 
         return Proxy.newProxyInstance(service.getClassLoader(),
                 // 使用代理来创建consumer，并增强其内容

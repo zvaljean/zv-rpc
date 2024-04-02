@@ -4,7 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -30,6 +32,15 @@ public class InstanceMeta {
         this.host = host;
         this.port = port;
         this.context = context;
+    }
+
+    public static List<InstanceMeta> convertInstance(List<String> data) {
+        List<InstanceMeta> list = new ArrayList<>();
+        data.stream().forEach(item -> {
+            String[] detail = item.split("_");
+            list.add(http(detail[0], Integer.valueOf(detail[1])));
+        });
+        return list;
     }
 
     public String toUrl() {
