@@ -8,6 +8,7 @@ import cn.valjean.rpc.core.meta.InstanceMeta;
 import cn.valjean.rpc.core.meta.ServiceMeta;
 import cn.valjean.rpc.core.utils.MethodUtils;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -21,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 @Data
+@Slf4j
 public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAware {
 
     ApplicationContext applicationContext;
@@ -51,7 +53,7 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
 
         String[] names = applicationContext.getBeanDefinitionNames();
         long begin = System.currentTimeMillis();
-        System.out.println("begin => " + begin);
+        log.debug("begin => " + begin);
 
         RegistryCenter rc = applicationContext.getBean(RegistryCenter.class);
 
@@ -60,7 +62,7 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
             Object bean = applicationContext.getBean(name);
             String packageName = bean.getClass().getPackageName();
             if (bean.getClass().getName().contains("DemoConsumerApplicationTest")) {
-                System.out.println("packageName = " + packageName);
+                log.debug("packageName = " + packageName);
             }
             if (packageName.startsWith("org.springframework") ||
                     packageName.startsWith("java.") ||
@@ -72,11 +74,11 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
                     packageName.startsWith("org.apache")) {
                 continue;  // 这段逻辑可以降低一半启动速度 300ms->160ms
             }
-            System.out.println(packageName + " package bean => " + name);
+            log.debug(packageName + " package bean => " + name);
 
             List<Field> fields = MethodUtils.findAnnotatedField(bean.getClass());
             for (Field field : fields) {
-                System.out.println("field name = " + field.getName());
+                log.debug("field name = " + field.getName());
                 try {
                     // 此处获得是消费者，也就是service
                     Class<?> service = field.getType();
@@ -113,7 +115,7 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
 
         List<InstanceMeta> nodes = rc.fetchAll(serviceMeta);
 
-        nodes.forEach(x -> System.out.println("providers --->>> " + x));
+        nodes.forEach(x -> log.debug("providers --->>> " + x));
 
         rc.subscribe(serviceMeta, event -> {
             nodes.clear();

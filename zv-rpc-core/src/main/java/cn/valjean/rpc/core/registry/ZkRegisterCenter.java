@@ -3,6 +3,7 @@ package cn.valjean.rpc.core.registry;
 import cn.valjean.rpc.core.api.RegistryCenter;
 import cn.valjean.rpc.core.meta.InstanceMeta;
 import cn.valjean.rpc.core.meta.ServiceMeta;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 
 import java.util.List;
 
+@Slf4j
 public class ZkRegisterCenter implements RegistryCenter {
 
 
@@ -35,13 +37,13 @@ public class ZkRegisterCenter implements RegistryCenter {
                 .build();
 
         client.start();
-        System.out.println("zk--------> start");
+        log.debug("zk--------> start");
     }
 
     @Override
     public void stop() {
         client.close();
-        System.out.println("zk--------> stop");
+        log.debug("zk--------> stop");
     }
 
     @Override
@@ -55,7 +57,7 @@ public class ZkRegisterCenter implements RegistryCenter {
             // 创建实例的临时性节点
             String instancePath = servicePath + "/" + instance.toPath();
             client.create().withMode(CreateMode.EPHEMERAL).forPath(instancePath, "provider".getBytes());
-            System.out.println("zk--------> register");
+            log.debug("zk--------> register");
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
@@ -65,8 +67,8 @@ public class ZkRegisterCenter implements RegistryCenter {
     public void unregister(ServiceMeta service, InstanceMeta instance) {
 
         String servicePath = "/" + service.toPath();
-        System.out.println("servicePath = " + servicePath);
-        System.out.println("instance = " + instance.toUrl());
+        log.debug("servicePath = " + servicePath);
+        log.debug("instance = " + instance.toUrl());
         try {
             // 判断服务是否存在
             if (client.checkExists().forPath(servicePath) == null) {
@@ -76,7 +78,7 @@ public class ZkRegisterCenter implements RegistryCenter {
             // 如果有子节点也删除
             client.delete().quietly().deletingChildrenIfNeeded().forPath(servicePath);
             //            client.delete().forPath(servicePath);
-            System.out.println("zk--------> unregister");
+            log.debug("zk--------> unregister");
         } catch (Exception ex) {
             ex.printStackTrace();
             throw new RuntimeException(ex);

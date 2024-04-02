@@ -1,5 +1,6 @@
 package cn.valjean.rpc.core.utils;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
@@ -23,8 +24,10 @@ import java.util.function.Predicate;
  * @Author : kimmking(kimmking@apache.org)
  * @create 2024/3/23 01:35
  */
+@Slf4j
 public class ScanPackagesUtils {
 
+    //  issue: package utils for test package ?
     static final String DEFAULT_RESOURCE_PATTERN = "**/*.class";
 
     public static List<Class<?>> scanPackages(String[] packages, Predicate<Class<?>> predicate) {
@@ -37,17 +40,17 @@ public class ScanPackagesUtils {
             }
             String packageSearchPath = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX +
                     ClassUtils.convertClassNameToResourcePath(SystemPropertyUtils.resolvePlaceholders(basePackage)) + "/" + DEFAULT_RESOURCE_PATTERN;
-            System.out.println("packageSearchPath=" + packageSearchPath);
+            log.debug("packageSearchPath=" + packageSearchPath);
             try {
                 Resource[] resources = resourcePatternResolver.getResources(packageSearchPath);
                 for (Resource resource : resources) {
-                    //System.out.println(" resource: " + resource.getFilename());
+                    //log.debug(" resource: " + resource.getFilename());
                     MetadataReader metadataReader = metadataReaderFactory.getMetadataReader(resource);
                     ClassMetadata classMetadata = metadataReader.getClassMetadata();
                     String className = classMetadata.getClassName();
                     Class<?> clazz = Class.forName(className);
                     if (predicate.test(clazz)) {
-                        //System.out.println(" ===> class: " + className);
+                        //log.debug(" ===> class: " + className);
                         results.add(clazz);
                     }
                 }
@@ -61,14 +64,13 @@ public class ScanPackagesUtils {
     public static void main(String[] args) {
         String packages = "cn.valjean.rpc";
 
-        System.out.println(" 1. *********** ");
-        System.out.println(" => scan all classes for packages: " + packages);
+        log.debug(" 1. *********** ");
+        log.debug(" => scan all classes for packages: " + packages);
         List<Class<?>> classes = scanPackages(packages.split(","), p -> true);
         classes.forEach(System.out::println);
 
-        System.out.println();
-        System.out.println(" 2. *********** ");
-        System.out.println(" => scan all classes with @Configuration for packages: " + packages);
+        log.debug(" 2. *********** ");
+        log.debug(" => scan all classes with @Configuration for packages: " + packages);
         List<Class<?>> classesWithConfig = scanPackages(packages.split(","),
                 p -> Arrays.stream(p.getAnnotations())
                         .anyMatch(a -> a.annotationType().equals(Configuration.class)));

@@ -41,7 +41,7 @@ public class RpcDemoConsumerApplication {
 //    public ApplicationRunner consumer_runner() {
 //        return x -> {
 //            User byId = userService.findById(1);
-//            System.out.println("byId = " + byId);
-//        };
+    //            log.debug("byId = " + byId);
+    //        };
 //    }
 }

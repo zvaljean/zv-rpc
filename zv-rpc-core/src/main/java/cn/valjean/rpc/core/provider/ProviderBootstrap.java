@@ -10,6 +10,7 @@ import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.Data;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -22,6 +23,7 @@ import java.util.Arrays;
 import java.util.Map;
 
 @Data
+@Slf4j
 public class ProviderBootstrap implements ApplicationContextAware {
 
     ApplicationContext applicationContext;
@@ -51,7 +53,7 @@ public class ProviderBootstrap implements ApplicationContextAware {
     public void init01() {
         // ZVProvider 注解是标注在实现类上的
         Map<String, Object> provides = applicationContext.getBeansWithAnnotation(ZVProvider.class);
-        provides.forEach((x, y) -> System.out.println(x));
+        provides.forEach((x, y) -> log.debug(x));
         for (Object value : provides.values()) {
             for (Class<?> inter : value.getClass().getInterfaces()) {
                 for (Method method : inter.getMethods()) {
@@ -77,7 +79,7 @@ public class ProviderBootstrap implements ApplicationContextAware {
         rc = applicationContext.getBean(RegistryCenter.class);
         // ZVProvider 注解是标注在实现类上的
         Map<String, Object> provides = applicationContext.getBeansWithAnnotation(ZVProvider.class);
-        provides.forEach((x, y) -> System.out.println(x));
+        provides.forEach((x, y) -> log.debug(x));
         provides.values().forEach(this::getInterfaces);
     }
 
@@ -103,7 +105,7 @@ public class ProviderBootstrap implements ApplicationContextAware {
 
     @PreDestroy
     public void stop() {
-        System.out.println("PreDestroy-------------------->");
+        log.debug("PreDestroy-------------------->");
         skeleton.keySet().forEach(this::unregisterService);
         rc.stop();
     }
@@ -143,7 +145,7 @@ public class ProviderBootstrap implements ApplicationContextAware {
         ProviderMeta meta = ProviderMeta.builder()
                 .method(method)
                 .serviceImpl(impl)
-                .serviceImpl(sign).build();
+                .methodSign(sign).build();
         //issue : 这块的obj，是对应的实现类?
         skeleton.add(service.getCanonicalName(), meta);
     }

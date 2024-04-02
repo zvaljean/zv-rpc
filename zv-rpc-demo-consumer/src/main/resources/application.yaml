@@ -13,3 +13,8 @@ app:
 
 zvrpc:
   providers: http://localhost:8070,http://localhost:8071
+
+logging:
+  level:
+    root: info
+    cn.valjean.rpc: debug

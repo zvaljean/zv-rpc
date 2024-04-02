@@ -7,6 +7,7 @@ import cn.valjean.rpc.core.provider.ProviderInvoker;
 import cn.valjean.rpc.core.utils.MethodUtils;
 import cn.valjean.rpc.demo.api.UserService;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -22,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
+@Slf4j
 @SpringBootTest
 class RpcDemoProviderApplicationTest {
 
@@ -44,7 +46,7 @@ class RpcDemoProviderApplicationTest {
         Integer[] args = new Integer[]{200};
         request.setArgs(args);
         RpcResponse rpcResponse = providerInvoker.invoke(request);
-        System.out.println("return : " + rpcResponse.getData());
+        log.debug("return : " + rpcResponse.getData());
     }
 
     @Test
@@ -98,7 +100,7 @@ class RpcDemoProviderApplicationTest {
         request.setArgs(args);
 
         RpcResponse rpcResponse = providerInvoker.invoke(request);
-        System.out.println("return : " + rpcResponse.getData());
+        log.debug("return : " + rpcResponse.getData());
     }
 
 }

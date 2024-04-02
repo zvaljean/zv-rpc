@@ -4,11 +4,13 @@ import cn.valjean.rpc.core.api.RpcRequest;
 import cn.valjean.rpc.core.api.RpcResponse;
 import cn.valjean.rpc.core.consumer.HttpInvoker;
 import com.alibaba.fastjson.JSON;
+import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 public class OkHttpInvoker implements HttpInvoker {
 
     final static MediaType JSONTYPE = MediaType.get("application/json; charset=utf-8");
@@ -28,7 +30,8 @@ public class OkHttpInvoker implements HttpInvoker {
     @Override
     public RpcResponse<?> post(RpcRequest rpcRequest, String url) {
         String reqJson = JSON.toJSONString(rpcRequest);
-        System.out.println(" reqJson data" + reqJson);
+        //        log.debug(" reqJson data" + reqJson);
+        log.debug("url: {}, req-json-data: {}", url, reqJson);
         // provider api
         Request request = new Request.Builder()
                 .url(url)
@@ -36,7 +39,7 @@ public class OkHttpInvoker implements HttpInvoker {
                 .build();
         try {
             String respJson = client.newCall(request).execute().body().string();
-            System.out.println(" ===> respJson = " + respJson);
+            log.debug(" ===> respJson = " + respJson);
             RpcResponse rpcResponse = JSON.parseObject(respJson, RpcResponse.class);
             return rpcResponse;
         } catch (IOException e) {

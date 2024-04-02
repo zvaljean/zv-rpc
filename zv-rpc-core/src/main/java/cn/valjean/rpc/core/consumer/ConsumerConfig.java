@@ -5,6 +5,7 @@ import cn.valjean.rpc.core.api.RegistryCenter;
 import cn.valjean.rpc.core.api.Router;
 import cn.valjean.rpc.core.meta.InstanceMeta;
 import cn.valjean.rpc.core.registry.ZkRegisterCenter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationRunner;
@@ -12,6 +13,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 
+@Slf4j
 @Configuration
 public class ConsumerConfig {
 
@@ -28,9 +30,9 @@ public class ConsumerConfig {
     public ApplicationRunner consumerBootstrap_runner(@Autowired ConsumerBootstrap consumerBootstrap) {
 
         return x -> {
-            System.out.println("consumerBootstrap = starting ----------- ");
+            log.debug("consumerBootstrap = starting ----------- ");
             consumerBootstrap.start();
-            System.out.println("consumerBootstrap = started ############ ");
+            log.debug("consumerBootstrap = started ############ ");
         };
     }
 

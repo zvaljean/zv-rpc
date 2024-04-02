@@ -2,6 +2,7 @@ package cn.valjean.rpc.core.utils;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Array;
@@ -10,9 +11,11 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
 
+@Slf4j
 public class TypeUtils {
     public static Object cast(Object source, Class<?> type) {
-        if (source == null) return null;
+        if (source == null)
+            return null;
         Class<?> aClass = source.getClass();
         // issue
         if (type.isAssignableFrom(aClass)) {
@@ -105,10 +108,10 @@ public class TypeUtils {
             } else if (List.class.isAssignableFrom(returnType)) {
                 List<Object> resultList = new ArrayList<>(array.length);
                 Type genericReturnType = method.getGenericReturnType();
-                System.out.println(genericReturnType);
+                log.debug("{}", genericReturnType);
                 if (genericReturnType instanceof ParameterizedType parameterizedType) {
                     Type actualType = parameterizedType.getActualTypeArguments()[0];
-                    System.out.println(actualType);
+                    log.debug("{}", actualType);
                     for (Object o : array) {
                         resultList.add(TypeUtils.cast(o, (Class<?>) actualType));
                     }

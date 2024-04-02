@@ -8,3 +8,8 @@ app:
   id: app1
   env: dev
   namespace: public
+
+logging:
+  level:
+    root: info
+    cn.valjean.rpc: debug
