@@ -10,7 +10,11 @@ import org.springframework.context.annotation.Import;
  * issue
  * 通过import加载初始化的各种配置，
  * 完成consumer的准备工作
+ * https://zhuanlan.zhihu.com/p/147025312
+ * https://docs.spring.io/spring-framework/reference/core/beans/java/composing-configuration-classes.html#beans-java-using-import
+ *
  */
+
 @Import({ConsumerConfig.class})
 public class RpcDemoConsumerApplication {
     public static void main(String[] args) {

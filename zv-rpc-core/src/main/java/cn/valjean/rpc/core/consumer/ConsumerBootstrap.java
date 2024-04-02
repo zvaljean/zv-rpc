@@ -76,13 +76,13 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
                 try {
                     // 此处获得是消费者，也就是service
                     Class<?> service = field.getType();
-//                canonical :: 标准
+    //                canonical :: 标准
                     String canonicalName = service.getCanonicalName();
                     Object consumer = stub.get(canonicalName);
                     if (consumer == null) {
                         // 没有才创建
                         // fixme: consumer --> null
-//                        consumer = createConsumer(service, rpcContext, rc);
+                        //                        consumer = createConsumer(service, rpcContext, rc);
                         consumer = createFromRegister(service, rpcContext, rc);
                         //将创建好的bean放入其中
                         stub.put(canonicalName, consumer);

@@ -17,10 +17,11 @@ public class ProviderConfig {
     }
 
 
-    @Bean(initMethod = "start", destroyMethod = "stop")
-    public RegistryCenter registryCenter() {
-        return new ZkRegisterCenter();
-    }
+//    @Bean(initMethod = "start", destroyMethod = "stop")
+@Bean
+public RegistryCenter registryCenter() {
+    return new ZkRegisterCenter();
+}
 
 
     @Bean

@@ -34,6 +34,8 @@ public class ProviderBootstrap implements ApplicationContextAware {
 
     private String instance;
 
+    RegistryCenter rc;
+
     @Value("${server.port}")
     private String port;
 
@@ -58,8 +60,16 @@ public class ProviderBootstrap implements ApplicationContextAware {
         }
     }
 
+    /**
+     * https://docs.spring.io/spring-framework/reference/core/beans/factory-nature.html#beans-factory-lifecycle-combined-effects
+     * <p>
+     * https://docs.spring.io/spring-framework/reference/core/beans/annotation-config/postconstruct-and-predestroy-annotations.html
+     * PostConstruct :: 由该注解，则进行初始化的一些操作
+     * bean 声明周期
+     */
     @PostConstruct
     public void init() {
+        rc = applicationContext.getBean(RegistryCenter.class);
         // ZVProvider 注解是标注在实现类上的
         Map<String, Object> provides = applicationContext.getBeansWithAnnotation(ZVProvider.class);
         provides.forEach((x, y) -> System.out.println(x));
@@ -68,13 +78,13 @@ public class ProviderBootstrap implements ApplicationContextAware {
 
     private void getInterfaces(Object value) {
         Arrays.stream(value.getClass().getInterfaces())
-                .forEach(iter -> {
-                    for (Method method : iter.getMethods()) {
+                .forEach(service -> {
+                    for (Method method : service.getMethods()) {
                         String s = MethodUtils.methodSign(method);
                         if (s.length() == 0) {
                             continue;
                         }
-                        createProvider(iter, value, method, s);
+                        createProvider(service, value, method, s);
                     }
                 });
     }
@@ -83,21 +93,23 @@ public class ProviderBootstrap implements ApplicationContextAware {
     public void start() {
         String ip = InetAddress.getLocalHost().getHostAddress();
         instance = ip + "_" + port;
+        rc.start();
         skeleton.keySet().forEach(this::registerService);
     }
 
     @PreDestroy
     public void stop() {
         skeleton.keySet().forEach(this::unregisterService);
+        rc.stop();
     }
 
     private void unregisterService(String service) {
-        RegistryCenter rc = applicationContext.getBean(RegistryCenter.class);
+        //        RegistryCenter rc = applicationContext.getBean(RegistryCenter.class);
         rc.unregister(service, instance);
     }
 
     private void registerService(String service) {
-        RegistryCenter rc = applicationContext.getBean(RegistryCenter.class);
+        //        RegistryCenter rc = applicationContext.getBean(RegistryCenter.class);
         rc.register(service, instance);
     }
 
@@ -130,7 +142,7 @@ public class ProviderBootstrap implements ApplicationContextAware {
         List<ProviderMeta> providerMetas = skeleton.get(request.getService());
         try {
             ProviderMeta meta = findProviderMeta(providerMetas, request.getMethodSign());
-//            Method method = MethodUtils.findMethod(bean.getClass(), request.getMethodSign());
+            //            Method method = MethodUtils.findMethod(bean.getClass(), request.getMethodSign());
             Method method = meta.getMethod();
             Object[] args = processArgs(request.getArgs(), method.getParameterTypes());
             Object result = method.invoke(meta.getServiceImpl(), args);
@@ -151,7 +163,8 @@ public class ProviderBootstrap implements ApplicationContextAware {
      * @return
      */
     private Object[] processArgs(Object[] args, Class<?>[] parameterTypes) {
-        if (args == null || args.length == 0) return args;
+        if (args == null || args.length == 0)
+            return args;
         Object[] param = new Object[args.length];
         for (int i = 0; i < args.length; i++) {
             param[i] = TypeUtils.cast(args[i], parameterTypes[i]);
@@ -165,12 +178,12 @@ public class ProviderBootstrap implements ApplicationContextAware {
                 = providerMetas.stream().filter(x -> x.getMethodSign().equals(methodSign)).findFirst();
         return first.orElse(null);
 
-//        for (ProviderMeta providerMeta : providerMetas) {
-//            if (methodSign.equals(providerMeta.getMethodSign())) {
-//                return providerMeta;
-//            }
-//        }
-//        return null;
+        //        for (ProviderMeta providerMeta : providerMetas) {
+        //            if (methodSign.equals(providerMeta.getMethodSign())) {
+        //                return providerMeta;
+        //            }
+        //        }
+        //        return null;
     }
 
 
