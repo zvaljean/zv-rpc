@@ -2,3 +2,4 @@ server:
   port: 8070
 zk:
   url: 10.0.0.241:2181
+  namespace: valjean

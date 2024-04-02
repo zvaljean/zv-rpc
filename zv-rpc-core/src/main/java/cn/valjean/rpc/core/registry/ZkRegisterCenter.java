@@ -1,6 +1,7 @@
 package cn.valjean.rpc.core.registry;
 
 import cn.valjean.rpc.core.api.RegistryCenter;
+import cn.valjean.rpc.core.meta.InstanceMeta;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -16,6 +17,9 @@ public class ZkRegisterCenter implements RegistryCenter {
     @Value("${zk.url}")
     String zkServer;
 
+    @Value("${zk.namespace}")
+    String zkNameSpace;
+
     CuratorFramework client;
 
     @Override
@@ -25,7 +29,7 @@ public class ZkRegisterCenter implements RegistryCenter {
 
         client = CuratorFrameworkFactory.builder()
                 .connectString(zkServer)
-                .namespace("valjean")
+                .namespace(zkNameSpace)
                 .retryPolicy(retryPolicy)
                 .build();
 
@@ -40,7 +44,7 @@ public class ZkRegisterCenter implements RegistryCenter {
     }
 
     @Override
-    public void register(String service, String instance) {
+    public void register(String service, InstanceMeta instance) {
         String servicePath = "/" + service;
         try {
             // 创建服务的持久化节点
@@ -48,7 +52,7 @@ public class ZkRegisterCenter implements RegistryCenter {
                 client.create().withMode(CreateMode.PERSISTENT).forPath(servicePath, "service".getBytes());
             }
             // 创建实例的临时性节点
-            String instancePath = servicePath + "/" + instance;
+            String instancePath = servicePath + "/" + instance.toPath();
             client.create().withMode(CreateMode.EPHEMERAL).forPath(instancePath, "provider".getBytes());
             System.out.println("zk--------> register");
         } catch (Exception ex) {
@@ -57,11 +61,11 @@ public class ZkRegisterCenter implements RegistryCenter {
     }
 
     @Override
-    public void unregister(String service, String instance) {
+    public void unregister(String service, InstanceMeta instance) {
 
         String servicePath = "/" + service;
         System.out.println("servicePath = " + servicePath);
-        System.out.println("instance = " + instance);
+        System.out.println("instance = " + instance.toUrl());
         try {
             // 判断服务是否存在
             if (client.checkExists().forPath(servicePath) == null) {

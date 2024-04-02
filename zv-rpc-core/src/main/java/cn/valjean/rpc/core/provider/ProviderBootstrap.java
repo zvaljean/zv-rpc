@@ -2,6 +2,7 @@ package cn.valjean.rpc.core.provider;
 
 import cn.valjean.rpc.core.annotation.ZVProvider;
 import cn.valjean.rpc.core.api.RegistryCenter;
+import cn.valjean.rpc.core.meta.InstanceMeta;
 import cn.valjean.rpc.core.meta.ProviderMeta;
 import cn.valjean.rpc.core.utils.MethodUtils;
 import jakarta.annotation.PostConstruct;
@@ -26,7 +27,7 @@ public class ProviderBootstrap implements ApplicationContextAware {
 
     private MultiValueMap<String, ProviderMeta> skeleton = new LinkedMultiValueMap<>();
 
-    private String instance;
+    private InstanceMeta instance;
 
     RegistryCenter rc;
 
@@ -85,7 +86,7 @@ public class ProviderBootstrap implements ApplicationContextAware {
     @SneakyThrows
     public void start() {
         String ip = InetAddress.getLocalHost().getHostAddress();
-        instance = ip + "_" + port;
+        instance = InstanceMeta.http(ip, Integer.valueOf(port));
         rc.start();
         skeleton.keySet().forEach(this::registerService);
     }
