@@ -1,0 +1,8 @@
+* PrettyZoo
+- https://github.com/vran-dev/PrettyZoo
+* jdk
+- Java HotSpot(TM) 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended [[https://stackoverflow.com/questions/65613084/java-hotspottm-64-bit-server-vm-warning-sharing-is-only-supported-for-boot-lo][tutor-1]]
+  #+begin_quote
+    In IntelliJ:
+    Run/Debug Configurations -> Edit configuration template (bottom left) -> add VM options -Xshare:off.
+  #+end_quote

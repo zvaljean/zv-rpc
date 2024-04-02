@@ -16,12 +16,16 @@ public class ProviderConfig {
         return new ProviderBootstrap();
     }
 
+    @Bean
+    ProviderInvoker providerInvoker(@Autowired ProviderBootstrap providerBootstrap) {
+        return new ProviderInvoker(providerBootstrap);
+    }
 
-//    @Bean(initMethod = "start", destroyMethod = "stop")
-@Bean
-public RegistryCenter registryCenter() {
-    return new ZkRegisterCenter();
-}
+    //    @Bean(initMethod = "start", destroyMethod = "stop")
+    @Bean
+    public RegistryCenter registryCenter() {
+        return new ZkRegisterCenter();
+    }
 
 
     @Bean

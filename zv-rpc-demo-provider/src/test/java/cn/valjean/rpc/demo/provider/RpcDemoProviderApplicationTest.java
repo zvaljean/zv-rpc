@@ -3,8 +3,10 @@ package cn.valjean.rpc.demo.provider;
 import cn.valjean.rpc.core.api.RpcRequest;
 import cn.valjean.rpc.core.api.RpcResponse;
 import cn.valjean.rpc.core.provider.ProviderBootstrap;
+import cn.valjean.rpc.core.provider.ProviderInvoker;
 import cn.valjean.rpc.core.utils.MethodUtils;
 import cn.valjean.rpc.demo.api.UserService;
+import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -26,6 +28,9 @@ class RpcDemoProviderApplicationTest {
     @Autowired
     ProviderBootstrap providerBootstrap;
 
+    @Resource
+    ProviderInvoker providerInvoker;
+
     /**
      * 测试无重载的方法
      */
@@ -38,7 +43,7 @@ class RpcDemoProviderApplicationTest {
 //        request.setMethod("findById");
         Integer[] args = new Integer[]{200};
         request.setArgs(args);
-        RpcResponse rpcResponse = providerBootstrap.invoke(request);
+        RpcResponse rpcResponse = providerInvoker.invoke(request);
         System.out.println("return : " + rpcResponse.getData());
     }
 
@@ -92,7 +97,7 @@ class RpcDemoProviderApplicationTest {
         request.setMethodSign(methodSign);
         request.setArgs(args);
 
-        RpcResponse rpcResponse = providerBootstrap.invoke(request);
+        RpcResponse rpcResponse = providerInvoker.invoke(request);
         System.out.println("return : " + rpcResponse.getData());
     }
 

@@ -2,8 +2,8 @@ package cn.valjean.rpc.demo.provider;
 
 import cn.valjean.rpc.core.api.RpcRequest;
 import cn.valjean.rpc.core.api.RpcResponse;
-import cn.valjean.rpc.core.provider.ProviderBootstrap;
 import cn.valjean.rpc.core.provider.ProviderConfig;
+import cn.valjean.rpc.core.provider.ProviderInvoker;
 import jakarta.annotation.Resource;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class RpcDemoProviderApplication {
 
     @Resource
-    ProviderBootstrap providerBootstrap;
+    ProviderInvoker providerInvoker;
 
     public static void main(String[] args) {
         SpringApplication.run(RpcDemoProviderApplication.class, args);
@@ -30,7 +30,7 @@ public class RpcDemoProviderApplication {
 
     @RequestMapping("/")
     public RpcResponse invoke(@RequestBody RpcRequest request) {
-        return providerBootstrap.invoke(request);
+        return providerInvoker.invoke(request);
     }
 
 
