@@ -1,8 +1,10 @@
 package cn.valjean.rpc.core.consumer;
 
+import cn.valjean.rpc.core.api.Filter;
 import cn.valjean.rpc.core.api.LoadBalancer;
 import cn.valjean.rpc.core.api.RegistryCenter;
 import cn.valjean.rpc.core.api.Router;
+import cn.valjean.rpc.core.filter.CacheFilter;
 import cn.valjean.rpc.core.meta.InstanceMeta;
 import cn.valjean.rpc.core.registry.ZkRegisterCenter;
 import lombok.extern.slf4j.Slf4j;
@@ -42,13 +44,23 @@ public class ConsumerConfig {
     }
 
     @Bean
+    public Filter defaultFilter() {
+        return Filter.Default;
+    }
+
+    @Bean
+    public Filter cacheFilter() {
+        return new CacheFilter();
+    }
+
+    @Bean
     public LoadBalancer<InstanceMeta> loadBalancer() {
         return LoadBalancer.DefaultLoadBalancer;
     }
 
     @Bean(initMethod = "start", destroyMethod = "stop")
     public RegistryCenter registryCenter() {
-//        return new StaticRegisterCenter(List.of(services.split(",")));
+        //        return new StaticRegisterCenter(List.of(services.split(",")));
         return new ZkRegisterCenter();
     }
 

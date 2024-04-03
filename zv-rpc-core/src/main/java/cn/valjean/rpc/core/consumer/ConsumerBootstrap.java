@@ -1,9 +1,6 @@
 package cn.valjean.rpc.core.consumer;
 
-import cn.valjean.rpc.core.api.LoadBalancer;
-import cn.valjean.rpc.core.api.RegistryCenter;
-import cn.valjean.rpc.core.api.Router;
-import cn.valjean.rpc.core.api.RpcContext;
+import cn.valjean.rpc.core.api.*;
 import cn.valjean.rpc.core.meta.InstanceMeta;
 import cn.valjean.rpc.core.meta.ServiceMeta;
 import cn.valjean.rpc.core.utils.MethodUtils;
@@ -47,9 +44,13 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
         Router router = applicationContext.getBean(Router.class);
         LoadBalancer loadBalancer = applicationContext.getBean(LoadBalancer.class);
 
+        List<Filter> filters = applicationContext.getBeansOfType(Filter.class)
+                .values().stream().toList();
+
         RpcContext rpcContext = new RpcContext();
         rpcContext.setLoadBalancer(loadBalancer);
         rpcContext.setRouter(router);
+        rpcContext.setFilters(filters);
 
         String[] names = applicationContext.getBeanDefinitionNames();
         long begin = System.currentTimeMillis();
